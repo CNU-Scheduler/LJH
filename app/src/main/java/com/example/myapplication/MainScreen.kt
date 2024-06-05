@@ -74,10 +74,10 @@ fun ZoomableBox() {
         ) {
             for(i:Int in 0..<xlocations.size) PointLayout(pointNumber = i , size = scale)
             for(i:Int in 1..<xlocations.size) DrawLineBetweenPoints(
-                startX = ((xlocations[i-1]+15/scale) * 2.66).toFloat(),
-                startY = ((ylocations[i-1]+15/scale) * 2.66).toFloat(),
-                endX = ((xlocations[i]+15/scale) * 2.66).toFloat(),
-                endY = ((ylocations[i]+15/scale) * 2.66).toFloat()
+                startX = xlocations[i-1].toFloat(),
+                startY = ylocations[i-1].toFloat(),
+                endX = xlocations[i].toFloat(),
+                endY = ylocations[i].toFloat()
             )
         }
     }
