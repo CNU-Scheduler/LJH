@@ -9,23 +9,31 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import com.example.myapplication.ui.theme.MyApplicationTheme
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            checkLocationPermissionAndStartService()
-            ZoomableBox()
+//            checkLocationPermissionAndStartService()
+            MainScreen()
+//            AddSchedule()
         }
     }
 
@@ -81,5 +89,74 @@ class MainActivity : AppCompatActivity() {
             startService(intent)
             Toast.makeText(this, "Location service stopped", Toast.LENGTH_SHORT).show()
         }
+    }
+}
+
+@Composable
+fun NavigationGraph(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = "addSchedule") {
+        composable("main") {
+            MainScreen()
+        }
+        composable("addSchedule") { // <- 여기로 이동
+            AddSchedule()
+        }
+    }
+}
+
+@Composable
+fun DrawerContent(onCloseDrawer: () -> Unit) {
+    val navController = rememberNavController()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF505050))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "홈",
+            color = Color(0xFFFFFFFF),
+            fontSize = 20.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    onCloseDrawer()
+                    navController.navigate("main")
+                }
+                .padding(vertical = 8.dp)
+
+        )
+        Text(
+            text = "일정",
+            color = Color(0xFFFFFFFF),
+            fontSize = 20.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCloseDrawer() }
+                .padding(vertical = 8.dp)
+
+        )
+        Text(
+            text = "일정 추가",
+            color = Color(0xFFFFFFFF),
+            fontSize = 20.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    onCloseDrawer()
+                    navController.navigate("addSchedule")
+                }
+                .padding(vertical = 8.dp)
+        )
+        Text(
+            text = "설정",
+            color = Color(0xFFFFFFFF),
+            fontSize = 20.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCloseDrawer() }
+                .padding(vertical = 8.dp)
+        )
     }
 }

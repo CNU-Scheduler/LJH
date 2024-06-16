@@ -21,7 +21,18 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.DrawerValue
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.ModalDrawer
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.alpha
@@ -34,16 +45,75 @@ import kotlin.math.*
 
 val xlocations = arrayListOf(330, 100, 200, 300, 40, 70, 200, 350)
 val ylocations = arrayListOf(50, 600, 150, 350, 500, 100, 50, 550)
+val colors = arrayListOf(
+    Color(0xFFFFFFFF),
+    Color(0xFFFF0000),
+    Color(0xFF3498DB),
+    Color(0xFF00FF00),
+    Color(0xFF0000FF),
+    Color(0xFF999999),
+    Color(0xFFFFFF00),
+    Color(0xFF00FFFF)
+)
 
 @Composable
-fun ZoomableBox() {
+fun MainScreen() {
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            DrawerContent(onCloseDrawer = {
+                scope.launch { drawerState.close() }
+            })
+        },
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        if (drawerState.isOpen) {
+                            alpha = 0.5f
+                        }
+                    }
+            ) {
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = { Text("Schedule ++") },
+                            navigationIcon = {
+                                IconButton(onClick = {
+                                    scope.launch {
+                                        if (drawerState.isOpen) {
+                                            drawerState.close()
+                                        } else {
+                                            drawerState.open()
+                                        }
+                                    }
+                                }) {
+                                    Icon(Icons.Default.Menu, contentDescription = "Menu")
+                                }
+                            }
+                        )
+                    }
+                ) { paddingValues ->
+                    ZoomableBox(modifier = Modifier.padding(paddingValues))
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun ZoomableBox(modifier: Modifier = Modifier) {
     var scale by remember { mutableFloatStateOf(1f) }
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
     var boxSize by remember { mutableStateOf(IntSize.Zero) }
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
     ) {
         Box(
             modifier = Modifier
@@ -72,13 +142,14 @@ fun ZoomableBox() {
                     translationY = offsetY
                 )
         ) {
-            for(i:Int in 0..<xlocations.size) PointLayout(pointNumber = i , size = scale)
             for(i:Int in 1..<xlocations.size) DrawLineBetweenPoints(
-                startX = xlocations[i-1].toFloat(),
-                startY = ylocations[i-1].toFloat(),
-                endX = xlocations[i].toFloat(),
-                endY = ylocations[i].toFloat()
+                startX = ((xlocations[i-1]+30/(scale+1)) * 2.63).toFloat(),
+                startY = ((ylocations[i-1]+30/(scale+1)) * 2.63).toFloat(),
+                endX = ((xlocations[i]+30/(scale+1)) * 2.63).toFloat(),
+                endY = ((ylocations[i]+30/(scale+1)) * 2.63).toFloat(),
+                lineNumber = i
             )
+            for(i:Int in 0..<xlocations.size) PointLayout(pointNumber = i , size = scale)
         }
     }
 }
@@ -87,24 +158,21 @@ fun ZoomableBox() {
 fun PointLayout(size:Float, pointNumber:Int){
     val xloc = xlocations[pointNumber]
     val yloc = ylocations[pointNumber]
+    val color = colors[pointNumber]
     val scale = remember { Animatable(1f) }
     val alpha = remember { Animatable(1f) }
 
-    // Coroutine scope for animations
     val scope = rememberCoroutineScope()
 
-    // Automatically start the animation and repeat it periodically
     LaunchedEffect(Unit) {
         delay(pointNumber.toLong() * 400)
         while (true) {
-            // Start the animation
             scope.launch {
                 launch { scale.animateTo(3f, animationSpec = tween(durationMillis = 2000)) }
                 launch { alpha.animateTo(0f, animationSpec = tween(durationMillis = 2000)) }
             }
-            delay(1500 + (xlocations.size*400).toLong()) // Wait for the animation to complete
+            delay(1500 + (xlocations.size*400).toLong())
 
-            // Immediately reset to initial state
             scale.snapTo(1f)
             alpha.snapTo(1f)
         }
@@ -113,15 +181,15 @@ fun PointLayout(size:Float, pointNumber:Int){
     Box(
         modifier = Modifier
             .offset(xloc.dp, yloc.dp)
-            .size((30 / size).dp, (30 / size).dp)
-            .background(Color(0xFF3498DB), CircleShape)
+            .size((60 / (size+1)).dp, (60 / (size+1)).dp)
+            .background(color, CircleShape)
     ){
         Box(
             modifier = Modifier
                 .size(100.dp)
                 .scale(scale.value)
                 .alpha(alpha.value)
-                .background(Color(0xFF3498DB), CircleShape)
+                .background(color, CircleShape)
         )
     }
 }
@@ -132,17 +200,17 @@ fun DrawLineBetweenPoints(
     startY: Float,
     endX: Float,
     endY: Float,
-    lineColor: Color = Color(0xFF3498DB),
-    lineWidth: Float = 5f
+    lineNumber: Int
 ) {
+    val color = colors[lineNumber]
     Canvas(
         modifier = Modifier
     ) {
         drawLine(
-            color = lineColor,
+            color = color,
             start = Offset(startX, startY),
             end = Offset(endX, endY),
-            strokeWidth = lineWidth,
+            strokeWidth = 6f,
             cap = StrokeCap.Round
         )
     }
