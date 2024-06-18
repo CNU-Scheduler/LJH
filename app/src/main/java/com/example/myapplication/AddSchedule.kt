@@ -10,10 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddSchedule() {
+fun AddSchedule(navController: NavHostController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -22,7 +23,7 @@ fun AddSchedule() {
         drawerContent = {
             DrawerContent(onCloseDrawer = {
                 scope.launch { drawerState.close() }
-            })
+            }, navController = navController)
         },
         content = {
             Box(
@@ -61,12 +62,13 @@ fun AddSchedule() {
     )
 }
 
-class Schedule (title: String, date: String, loc: String, color: Color) {
-    var title: String = title
-    var date: String = date
-    var loc: String = loc
-    var color: Color = color
-}
+class Schedule (
+    var title: String,
+    var date: String,
+    var time: String,
+    var loc: Double,
+    var color: Color
+)
 
 var ScheduleList = ArrayList<Schedule>()
 
@@ -74,6 +76,7 @@ var ScheduleList = ArrayList<Schedule>()
 fun ScheduleInputScreen(modifier: Modifier = Modifier) {
     var title by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
+    var time by remember { mutableStateOf("") }
     var loc by remember { mutableStateOf("") }
 
     Column(
@@ -107,6 +110,15 @@ fun ScheduleInputScreen(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
+            value = time,
+            onValueChange = { time = it },
+            label = { Text("시간") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
             value = loc,
             onValueChange = { loc = it },
             label = { Text("장소") },
@@ -117,7 +129,7 @@ fun ScheduleInputScreen(modifier: Modifier = Modifier) {
 
         Button(
             onClick = {
-                      ScheduleList.add(Schedule(title, date, loc, Color(0xFFFFFFFF)))
+                      ScheduleList.add(Schedule(title, date, time, loc.toDouble(), Color(0xFFFFFFFF)))
             },
             modifier = Modifier.align(Alignment.End)
         ) {

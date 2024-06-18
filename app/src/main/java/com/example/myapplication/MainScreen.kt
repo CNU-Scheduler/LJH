@@ -23,22 +23,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.DrawerValue
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.ModalDrawer
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.rememberDrawerState
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.*
@@ -57,16 +58,16 @@ val colors = arrayListOf(
 )
 
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavHostController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    ModalDrawer(
+    ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             DrawerContent(onCloseDrawer = {
                 scope.launch { drawerState.close() }
-            })
+            }, navController = navController)
         },
         content = {
             Box(
@@ -181,7 +182,7 @@ fun PointLayout(size:Float, pointNumber:Int){
     Box(
         modifier = Modifier
             .offset(xloc.dp, yloc.dp)
-            .size((60 / (size+1)).dp, (60 / (size+1)).dp)
+            .size((60 / (size + 1)).dp, (60 / (size + 1)).dp)
             .background(color, CircleShape)
     ){
         Box(

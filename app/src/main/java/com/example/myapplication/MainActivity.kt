@@ -29,11 +29,15 @@ import androidx.navigation.compose.rememberNavController
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContent {
-//            checkLocationPermissionAndStartService()
-            MainScreen()
-//            AddSchedule()
+            val navController = rememberNavController()
+            NavigationGraph(navController = navController)
+//            checkLocationPermissionAndStartService(navController = navController)
+//            MainScreen(navController = navController)
+//            AddSchedule(navController = navController)
+            ScheduleList(navController = navController)
         }
     }
 
@@ -94,19 +98,24 @@ class MainActivity : AppCompatActivity() {
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = "addSchedule") {
+    NavHost(navController = navController, startDestination = "main") {
         composable("main") {
-            MainScreen()
+            MainScreen(navController = navController)
         }
         composable("addSchedule") { // <- 여기로 이동
-            AddSchedule()
+            AddSchedule(navController = navController)
+        }
+        composable("ScheduleList") { // <- 여기로 이동
+            ScheduleList(navController = navController)
+        }
+        composable("System") { // <- 여기로 이동
+            System(navController = navController)
         }
     }
 }
 
 @Composable
-fun DrawerContent(onCloseDrawer: () -> Unit) {
-    val navController = rememberNavController()
+fun DrawerContent(onCloseDrawer: () -> Unit, navController: NavHostController) {
 
     Column(
         modifier = Modifier
@@ -133,7 +142,10 @@ fun DrawerContent(onCloseDrawer: () -> Unit) {
             fontSize = 20.sp,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onCloseDrawer() }
+                .clickable {
+                    onCloseDrawer()
+                    navController.navigate("ScheduleList")
+                }
                 .padding(vertical = 8.dp)
 
         )
@@ -155,7 +167,10 @@ fun DrawerContent(onCloseDrawer: () -> Unit) {
             fontSize = 20.sp,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onCloseDrawer() }
+                .clickable {
+                    onCloseDrawer()
+                    navController.navigate("System")
+                }
                 .padding(vertical = 8.dp)
         )
     }
